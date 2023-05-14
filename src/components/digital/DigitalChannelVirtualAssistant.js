@@ -61,7 +61,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 	const [nextBestAction, setNextBestAction] = useState("Not available");
 
 	const [profileSummary, setProfileSummary] = useState(defaultCustomerProfileSummary);
-	const [isFetchingProfileSummary, setIsFectchingProfileSummary] = useState(false);
+	const [isFetchingProfileSummary, setIsFetchingProfileSummary] = useState(false);
 
 	const handleSegmentAlertOpen = () => setIsSegmentAlertOpen(true);
 	const handleSegmentAlertClose = (payload, original) => {
@@ -412,6 +412,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 	useEffect(() => {
 		const fetchProfileSummary = async () => {
 		  console.log(`DigitalChannelVirtualAssistant: Fetching profile summary for ${props.task.attributes.emailAddress}`);
+		  setIsFetchingProfileSummary(true);
 		  try {
 			const response = await fetch(
 			  process.env.REACT_APP_PROFILE_SUMMARY_ENDPOINT,
@@ -433,8 +434,12 @@ const DigitalChannelVirtualAssistant = (props) => {
 			}
 	  
 			const data = await response.json();
+			console.log(`fetchProfileSummary: Got data: ${data}`);
+			setProfileSummary(data.profiles[0].profile.profile_summary)
 		  } catch (error) {
-			console.error('Error fetching profile summary:', error);
+			console.error('fetchProfileSummary: Error fetching profile summary:', error);
+		  } finally {
+			setIsFetchingProfileSummary(false);
 		  }
 		};
 	  
@@ -628,6 +633,24 @@ const DigitalChannelVirtualAssistant = (props) => {
 						</div>
 					</TabPanel>
 					<TabPanel>
+						{/*TOOD fetch profile summary and update. Right now it just reads the default one*/}
+						{ isFetchingProfileSummary ? (<>
+							<Heading as="h4" variant="heading30"></Heading>
+							<SkeletonLoader height="150px" /></>) : 
+						(<>
+						<Box backgroundColor="colorBackgroundBody" padding="space50">
+							<Separator orientation="horizontal" verticalSpacing="space50" />
+						</Box>
+						<Stack orientation="horizontal" spacing="space50">
+							<Heading as="h4" variant="heading30" marginBottom="space0">
+								About {props.customerName}
+							</Heading>
+						</Stack>
+						<Card>
+							<Paragraph marginBottom='space0'>{profileSummary}</Paragraph>
+						</Card>
+						</>
+						)}
 						<Grid gutter="space30">
 							<Column>
 								<Card padding="space70">
@@ -685,21 +708,6 @@ const DigitalChannelVirtualAssistant = (props) => {
 						<Card>
 							<Paragraph marginBottom='space0'>{nextBestAction}</Paragraph>
 						</Card>
-						
-						{ false ? (<></>) : (<>
-						<Box backgroundColor="colorBackgroundBody" padding="space50">
-							<Separator orientation="horizontal" verticalSpacing="space50" />
-						</Box>
-						<Stack orientation="horizontal" spacing="space50">
-							<Heading as="h4" variant="heading30" marginBottom="space0">
-								Profile Summary
-							</Heading>
-						</Stack>
-						<Card>
-							<Paragraph marginBottom='space0'>{profileSummary}</Paragraph>
-						</Card>
-						</>
-						)}
 					</TabPanel>
 				</TabPanels>
 			</Tabs>
