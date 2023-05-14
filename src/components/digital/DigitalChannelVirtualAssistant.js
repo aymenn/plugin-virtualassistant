@@ -283,7 +283,10 @@ const DigitalChannelVirtualAssistant = (props) => {
 		}
 	}
 
-	async function createChatCompletionWithRetry(chatCompletionObj, retries = 3, backoff = 2000) {
+	// Helper method that retries chat completion with a back off if it encounters a 429
+	async function createChatCompletionWithRetry(chatCompletionObj,
+		retries = process.env.REACT_APP_MAX_RETRIES,
+		backoff = process.env.REACT_APP_RETRY_DELAY_MS) {
 
 		try {
 			const response = await openai.createChatCompletion(chatCompletionObj);
