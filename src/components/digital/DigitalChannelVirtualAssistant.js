@@ -386,7 +386,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 		}
 
 		const { author, body, attributes } = message;
-		console.log(`DigitalChannelVirtualAssistant: updateCustomerSentimentAndNextBestAction: message:${message}, author:${author}, body:${body}, attributes:${attributes}`);
+		console.log(`DigitalChannelVirtualAssistant: updateCustomerSentimentAndNextBestAction:`, message, author, body,attributes);
 
 		if (attributes) {
 			const uuidRegex =
@@ -643,7 +643,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 						</Box>
 						<Stack orientation="horizontal" spacing="space50">
 							<Heading as="h4" variant="heading30" marginBottom="space0">
-								About {props.customerName}
+								About {props.task.attributes.customerName}
 							</Heading>
 						</Stack>
 						<Card>
