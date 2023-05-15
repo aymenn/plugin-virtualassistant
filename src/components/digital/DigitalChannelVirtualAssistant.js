@@ -14,7 +14,8 @@ import {
 	Grid,
 	Column,
 	Paragraph,
-	AlertDialog
+	AlertDialog,
+	Button
 } from "@twilio-paste/core";
 
 
@@ -131,6 +132,17 @@ const DigitalChannelVirtualAssistant = (props) => {
 			handleSegmentAlertClose();
 		}
 	}
+
+	const sendMessage = (text) => {
+		try {
+			Actions.invokeAction("SendMessage", {
+				conversationSid: props.task.attributes.conversationSid,
+				body: text,
+			});
+		} catch (err) {
+			console.error(err);
+		}
+	};
 
 	// Fetches conversations messages
 	// TODO we have a workaround that sets the intent from the first message because the intent we get from DF is hand over to agent.
@@ -696,6 +708,12 @@ const DigitalChannelVirtualAssistant = (props) => {
 						</Stack>
 						<Card padding="space30">
 							<Paragraph marginBottom='space0'>{nextBestAction}</Paragraph>
+							<Button
+										variant="primary"
+										onClick={() => sendMessage(nextBestAction.trim())}
+									>
+										Send Response
+									</Button>
 						</Card>
 					</TabPanel>
 				</TabPanels>
