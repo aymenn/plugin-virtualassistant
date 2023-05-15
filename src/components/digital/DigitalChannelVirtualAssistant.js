@@ -17,8 +17,6 @@ import {
 	AlertDialog
 } from "@twilio-paste/core";
 
-import DigitalChannelNextBestAction from "./DigitalChannelNextBestAction";
-// import ConversationSummaryCard from "./ConversationSummaryCard";
 
 import { useEffect, useState } from "react";
 import { withTaskContext } from "@twilio/flex-ui";
@@ -600,7 +598,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 	}, [props?.task?.attributes.conversationSid]);
 
 	return (
-		<Card>
+		<Card padding="space30">
 			<AlertDialog
 				heading="Update Segment with Summary"
 				isOpen={isSegmentAlertOpen}
@@ -610,7 +608,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 				onDismissLabel="Cancel">
 				<Paragraph marginBottom='space0'>You are about to update the Segment Profile of{" "}
 				{props.customerName} with the following summary:</Paragraph>
-				<Card><Paragraph marginBottom='space0'>{finalSummary}</Paragraph></Card>
+				<Card padding="space30"><Paragraph marginBottom='space0'>{finalSummary}</Paragraph></Card>
 				<Paragraph marginBottom='space0'>Click "Update & Complete Task" to proceed, or "Cancel" to return to Flex.</Paragraph>
 			</AlertDialog>
 			<Tabs
@@ -635,26 +633,26 @@ const DigitalChannelVirtualAssistant = (props) => {
 					<TabPanel>
 						{/*TOOD fetch profile summary and update. Right now it just reads the default one*/}
 						{ isFetchingProfileSummary ? (<>
-							<Heading as="h4" variant="heading30"></Heading>
+							<Heading as="h4" variant="heading40"></Heading>
 							<SkeletonLoader height="150px" /></>) : 
 						(<>
-						<Box backgroundColor="colorBackgroundBody" padding="space50">
-							<Separator orientation="horizontal" verticalSpacing="space50" />
-						</Box>
-						<Stack orientation="horizontal" spacing="space50">
-							<Heading as="h4" variant="heading30" marginBottom="space0">
+						<Stack orientation="horizontal" spacing="space30">
+							<Heading as="h4" variant="heading40">
 								About {props.task.attributes.customerName}
 							</Heading>
 						</Stack>
-						<Card>
+						<Card padding="space30">
 							<Paragraph marginBottom='space0'>{profileSummary}</Paragraph>
 						</Card>
 						</>
 						)}
+						<Box backgroundColor="colorBackgroundBody" padding="space30">
+							<Separator orientation="horizontal" verticalSpacing="space30" />
+						</Box>
 						<Grid gutter="space30">
 							<Column>
 								<Card padding="space70">
-									<Heading as="h4" variant="heading40">Sentiment</Heading>
+									<Heading as="h5" variant="heading50">Sentiment</Heading>
 									<Box display="flex" columnGap="space40" rowGap="space20" flexWrap="wrap">
 										<Badge as="span" variant={sentimentBadgeValue}>{sentimentBadgeValue}</Badge>
 									</Box>
@@ -662,50 +660,38 @@ const DigitalChannelVirtualAssistant = (props) => {
 							</Column>
 							<Column>
 								<Card padding="space70">
-									<Heading as="h4" variant="heading40">Intent</Heading>
+									<Heading as="h5" variant="heading50">Intent</Heading>
 									<Box display="flex" columnGap="space40" rowGap="space20" flexWrap="wrap">
 										<Badge as="span" variant="decorative10">{intent}</Badge>
 									</Box>
 								</Card>
 							</Column>
 						</Grid>
-						{nextBestActionTranscript && (
-							<DigitalChannelNextBestAction
-								events={props.task.attributes.events}
-								customerData={props.task.attributes.customers}
-								conversationSid={props.task.attributes.conversationSid}
-								customerName={props.task.attributes.customerName}
-								nextBestActionTranscript={nextBestActionTranscript}
-								workerName={props.task._task._worker.attributes.full_name}
-								customerEmail={props.task.attributes.emailAddress}
-							/>
-						)}
-						<Box backgroundColor="colorBackgroundBody" padding="space50">
-							<Separator orientation="horizontal" verticalSpacing="space50" />
+						<Box backgroundColor="colorBackgroundBody" padding="space30">
+							<Separator orientation="horizontal" verticalSpacing="space30" />
 						</Box>
 						<Stack orientation="horizontal" spacing="space50">
-							<Heading as="h4" variant="heading30" marginBottom="space0">
+							<Heading as="h4" variant="heading40">
 								🤖 Summary
 							</Heading>
 						</Stack>
 						{isLoadingVASummary ? (
 						<>
-						<Heading as="h4" variant="heading30"></Heading>
 						<SkeletonLoader height="150px" />
 						</>) : (
-						<Card>
+						<Card padding="space30">
 							<Paragraph marginBottom='space0'>{vaSummary}</Paragraph>
 						</Card>)}
 
-						<Box backgroundColor="colorBackgroundBody" padding="space50">
-							<Separator orientation="horizontal" verticalSpacing="space50" />
+						<Box backgroundColor="colorBackgroundBody" padding="space20">
+							<Separator orientation="horizontal" verticalSpacing="space30" />
 						</Box>
-						<Stack orientation="horizontal" spacing="space50">
-							<Heading as="h4" variant="heading30" marginBottom="space0">
+						<Stack orientation="horizontal" spacing="space30">
+							<Heading as="h4" variant="heading40">
 								Suggested response
 							</Heading>
 						</Stack>
-						<Card>
+						<Card padding="space30">
 							<Paragraph marginBottom='space0'>{nextBestAction}</Paragraph>
 						</Card>
 					</TabPanel>
