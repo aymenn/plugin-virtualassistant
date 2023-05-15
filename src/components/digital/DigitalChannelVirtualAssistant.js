@@ -33,7 +33,7 @@ const configuration = new Configuration({
   
 const manager = Manager.getInstance();
 
-const GPT_MODEL="gpt-3.5-turbo"; //"gpt-4-0314", text-davinci-003"
+const GPT_MODEL="gpt-4-0314"; //"gpt-3.5-turbo", text-davinci-003"
 
 const defaultCustomerProfileSummary = `
 Loyalty: 3 years
@@ -92,7 +92,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 			);
 
 			if (!response.ok) {
-				throw new Error("Segment update failed");
+				throw new Error("Segment update failed!");
 			}
 
 			return response.json();
@@ -104,6 +104,9 @@ const DigitalChannelVirtualAssistant = (props) => {
 
 	async function pushNewDataToSegment() {
 
+		const updatedTranscript = await retrieveTranscript();
+		const inferredTraits = await findInferredTraits(updatedTranscript);
+
 		const payloadSegment = {
 			anonymousId: "flexSummary_" + props.task.attributes.emailAddress,
 			event: "Transcript Summarization from Flex",
@@ -111,7 +114,8 @@ const DigitalChannelVirtualAssistant = (props) => {
 				email: props.task.attributes.emailAddress,
 				summary: finalSummary.replace(/^\n+/, ''),
 				sentiment: sentiment,
-				intent: intent
+				intent: intent,
+				inferredTraits: inferredTraits,
 			},
 			type: "track",
 		};
@@ -127,43 +131,6 @@ const DigitalChannelVirtualAssistant = (props) => {
 			handleSegmentAlertClose();
 		}
 	}
-
-		const submitDataToSegment = async () => {
-			return pushNewDataToSegment();
-
-			// TODO
-			console.log(`DigitalChannelVirtualAssistant: TODO pushSummaryToSegment: ${finalSummary}, ${sentiment}, ${intent}`);
-			try {
-				const response = await fetch(
-					process.env.REACT_APP_UPDATE_PROFILE_ENDPOINT,
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify(
-							{"summary": `${finalSummary}`,
-							 "email": `${props.task.attributes.emailAddress}`,
-							 "sentiment": `${sentiment}`,
-							 "intent": `${intent}`,
-							"instanceIdentifier": "GO4d208fdeb4cd4885beb7b2bea797c37c"
-						}),
-					}
-				);
-		
-				if (!response.ok) {
-					console.error(`Failed to update profile : ${response.status}`)
-					return;
-				}
-		
-				const data = await response.json();
-			} catch (error) { 
-			  console.error('Error updating profile summary:', error);
-			}
-			submitDataToSegment();
-		};
-		
-
 
 	// Fetches conversations messages
 	// TODO we have a workaround that sets the intent from the first message because the intent we get from DF is hand over to agent.
@@ -325,11 +292,6 @@ const DigitalChannelVirtualAssistant = (props) => {
 		}
 
 		const completion = await createOpenAISummary(updatedTranscript);
-		setTimeout(() => { // Adding a little timeout to avoid 429 from openai
-			// TODO remove from here
-			findInferredTraits(updatedTranscript);
-		}, 1000);
-
 		return completion.data.choices[0].message?.content
 	};
 
@@ -354,17 +316,58 @@ const DigitalChannelVirtualAssistant = (props) => {
 
 	// Get OpenAI to summarize the transcript
 	const findInferredTraits = async (transcript) => {
-		const prompt = `Find maximum 3 inferred traits in this conversation between customer and contact center agent and Fred the bot. 
+		const prompt = `Find maximum 3 inferred traits in this conversation between customer ${props.customerName} and contact center agent and Fred the bot. 
 		Find traits that are applicable to upsell and things the customer likes.
-		Only infer traits from the customer ${props.customerName}. Return the results in JSON array.
+		Only infer traits from the customer ${props.customerName}. Return the results in JSON array. Here's an exmaple ['Moving houses', 'Likes bright colors', 'Has pets', 'Evaluating a competitor'}
 		if there are no inferred traits, return and empty JSON array. ${transcript}`;
+
+
+		// TODO Add traits
+		const traits = {}
+		const systemPrompt = `
+		You are a data analyst. Your job is to review customer ${props.customerName}'s discussion and infer some new properties
+		 for that customer that would be helpful to save onto their profile for future use.
+		 If there are no new traits, then please return an empty object ({}).
+
+		You must only respond in valid JSON.
+		
+		If you see something related to these traits, prefer updating the value for these traits: ${Object.keys(
+			traits
+		  ).join(",")}.
+		
+		Examples:
+		
+		Customer: I'm hungry
+		Other: What would you like to eat?
+		Customer: Pancakes
+		{ "favorite_food": "pancakes" }
+		
+		Customer: Can you send me the notes from today's meeting?
+		Other: Sure, what email should I use?
+		Customer: example@example.com
+		{ "email_address": "example@example.com" }
+		
+		Customer: Good morning
+		Other: Hi, what's your name?
+		Customer: Dominik Kundel, but you can call me Dom
+		{ "first_name": "Dominik", "last_name": "Kundel", "nickname": "Dom" }
+		
+		Customer: You can take the front gate
+		Other: What's the code?
+		Customer: 8842
+		{ "gate_code": "8842" }
+		
+		Customer: I'm looking for new shoes
+		Other: What's the size?
+		Customer: 11
+		{ "shoe_size": 11 }`;
 
 		try {
 			const completion = await /*openai.createChatCompletion*/
 			createChatCompletionWithRetry({
 				model: GPT_MODEL,
 				messages: [
-				  {"role": "system", "content": prompt},
+				  {"role": "system", "content": systemPrompt},
 				  {"role": "user", "content": transcript},
 				],
 				temperature: 0.6,
@@ -372,7 +375,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 			});
 			
 			console.log(`findInferredTraits: ${completion.data.choices[0].message?.content}`);
-	
+			return completion.data.choices[0].message?.content;
 		} catch(error) {
 			console.error(`findInferredTraits: Failed to download: ${error}`)
 		}
@@ -421,7 +424,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 				},
 				body: JSON.stringify({
 				  "attributes": [{"key": "email", "value": `${props.task.attributes.emailAddress}`}],
-				  "instanceIdentifier": "GO4d208fdeb4cd4885beb7b2bea797c37c"
+				  "uniqueName": "prod_segment_profile_connector"
 				}),
 			  }
 			);
@@ -654,7 +657,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 								<Card padding="space70">
 									<Heading as="h5" variant="heading50">Sentiment</Heading>
 									<Box display="flex" columnGap="space40" rowGap="space20" flexWrap="wrap">
-										<Badge as="span" variant={sentimentBadgeValue}>{sentimentBadgeValue}</Badge>
+										<Badge as="span" variant={sentimentBadgeValue}>{sentiment}</Badge>
 									</Box>
 								</Card>
 							</Column>
