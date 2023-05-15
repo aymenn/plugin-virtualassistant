@@ -1,26 +1,10 @@
 import {
-	Card,
-	Box,
-	Badge,
-	SkeletonLoader,
 	Tab,
-	Tabs,
-	Separator,
-	Stack,
-	TabPanel,
-	TabPanels,
-	TabList,
-	Heading,
-	Grid,
-	Column,
-	Paragraph,
-	AlertDialog
 } from "@twilio-paste/core";
 
 import React from "react";
 import { FlexPlugin } from "@twilio/flex-plugin";
 import { CustomizationProvider } from "@twilio-paste/core/customization";
-import VoiceVirtualAssistant from "./components/voice/VoiceVirtualAssistant";
 import DigitalChannelVirtualAssistant from "./components/digital/DigitalChannelVirtualAssistant";
 import ConversationSummaryCard from "./components/digital/ConversationSummaryCard";
 
@@ -46,20 +30,6 @@ export default class VirtualAssistantPlugin extends FlexPlugin {
 		/**********************
 		 *  PANEL2 Virtual Assistant
 		 **********************/
-
-		/**
-		 * Determines if the Voice Virtual Assistant panel should be displayed based on the provided props.
-		 *
-		 * @param {Object} props The props object that contains the selected task and its attributes.
-		 * @returns {boolean} Returns true if the task has a call sid attribute, false otherwise.
-		 */
-		const shouldDisplayPanel2_VoiceVirtualAssistant = (props) => {
-			const t = props.tasks.get(props.selectedTaskSid);
-			if (t && t.attributes?.call_sid) {
-				return true;
-			}
-			return false;
-		};
 
 		/**
 		 * Determines if the Digital Channel Virtual Assistant panel should be displayed based on the provided props.
@@ -93,15 +63,6 @@ export default class VirtualAssistantPlugin extends FlexPlugin {
 			  if: shouldDisplayTab,
 			}
 		  );
-
-		//Conditionally replace Panel2 with the VoiceVirtualAssistant.
-		flex.AgentDesktopView.Panel2.Content.replace(
-			<VoiceVirtualAssistant key={Math.random()} />,
-			{
-				sortOrder: -1,
-				if: shouldDisplayPanel2_VoiceVirtualAssistant,
-			}
-		);
 
 		//Conditionally replace Panel2 with the DigitalChannelVirtualAssistant.
 		flex.AgentDesktopView.Panel2.Content.replace(
