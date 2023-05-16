@@ -215,7 +215,9 @@ const DigitalChannelVirtualAssistant = (props) => {
 				const message = messages[i];
 				console.log(`constructMessageJsonArrays: ${message}`);
 				if (!foundHandoff) {
-					//The messages we care about for generating (before live agent handoff) the transcript are only the messages sent by the VirtualAgent, this is because those messages have the critical data we need to display, including the customer's message that prompted it's reply, allow us to reconstruct the full transcript of the Virtual Agent Conversation
+					// The messages we care about for generating (before live agent handoff) the transcript are only the messages sent by the VirtualAgent
+					//, this is because those messages have the critical data we need to display,
+					// including the customer's message that prompted it's reply, allow us to reconstruct the full transcript of the Virtual Agent Conversation
 					if (message.author !== "Fred 🤖") {
 						continue;
 					}
@@ -621,8 +623,7 @@ const DigitalChannelVirtualAssistant = (props) => {
 				onConfirmLabel="Update & Complete Task"
 				onDismiss={handleSegmentAlertClose}
 				onDismissLabel="Cancel">
-				<Paragraph marginBottom='space0'>You are about to update the Segment Profile of{" "}
-				{props.customerName} with the following summary:</Paragraph>
+				<Paragraph marginBottom='space0'>New summary:</Paragraph>
 				<Card padding="space30"><Paragraph marginBottom='space0'>{finalSummary}</Paragraph></Card>
 				<Paragraph marginBottom='space0'>Click "Update & Complete Task" to proceed, or "Cancel" to return to Flex.</Paragraph>
 			</AlertDialog>
